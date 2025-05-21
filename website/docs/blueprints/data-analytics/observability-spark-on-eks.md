@@ -1,6 +1,6 @@
 ---
-sidebar_position: 3
-sidebar_label: Observability Spark on EKS
+sidebar_position: 5
+sidebar_label: Spark Observability on EKS
 ---
 
 import TaxiTripExec from './_taxi_trip_exec.md';
@@ -74,6 +74,7 @@ Then open browser and enter localhost:18085. You can view your spark history ser
 ## Prometheus
 Spark users must add the following config to spark application yaml file to extract the metrics from Spark Driver and Executors. In the example, they are added into nvme-ephemeral-storage.yaml already.
 
+```yaml
     "spark.ui.prometheus.enabled": "true"
     "spark.executor.processTreeMetrics.enabled": "true"
     "spark.kubernetes.driver.annotation.prometheus.io/scrape": "true"
@@ -86,6 +87,7 @@ Spark users must add the following config to spark application yaml file to extr
     "spark.metrics.conf.*.sink.prometheusServlet.path": "/metrics/driver/prometheus/"
     "spark.metrics.conf.master.sink.prometheusServlet.path": "/metrics/master/prometheus/"
     "spark.metrics.conf.applications.sink.prometheusServlet.path": "/metrics/applications/prometheus/"
+```
 
 Run port forward command to expose prometheus service.
 ```bash
@@ -101,7 +103,7 @@ Grafana has been installed. Use the command below to access with port forward.
 # get grafana password
 
 ```bash
-kubectl  port-forward service/grafana 8080:80 -n grafana  
+kubectl  port-forward service/grafana 8080:80 -n grafana
 ```
 
 login username is admin and password can get from secrets manager. You can import dashboard with ID: 7890.

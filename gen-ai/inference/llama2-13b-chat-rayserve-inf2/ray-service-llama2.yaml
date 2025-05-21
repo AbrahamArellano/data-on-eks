@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: llama2
+
 ---
 apiVersion: ray.io/v1
 kind: RayService
@@ -14,9 +15,32 @@ spec:
   serveConfigV2: |
     applications:
     - name: llama2
-      import_path: ray_serve_llama2:entrypoint
+      import_path: "ray_serve_llama2:entrypoint"
+      runtime_env:
+        env_vars:
+          MODEL_ID: "NousResearch/Llama-2-13b-chat-hf"
+          NEURON_CC_FLAGS: "-O1"
+          LD_LIBRARY_PATH: "/home/ray/anaconda3/lib:$LD_LIBRARY_PATH"
+          NEURON_CORES: "24"
+      deployments:
+        - name: Llama-2-13b-chat-hf
+          autoscaling_config:
+            metrics_interval_s: 0.2
+            min_replicas: 1
+            max_replicas: 1
+            look_back_period_s: 2
+            downscale_delay_s: 30
+            upscale_delay_s: 2
+            target_num_ongoing_requests_per_replica: 1
+          graceful_shutdown_timeout_s: 5
+          ray_actor_options:
+            num_cpus: 180
+            resources: {"neuron_cores": 24}
+            runtime_env:
+              env_vars:
+                LD_LIBRARY_PATH: "/home/ray/anaconda3/lib:$LD_LIBRARY_PATH"
   rayClusterConfig:
-    rayVersion: '2.7.1'
+    rayVersion: 2.22.0
     headGroupSpec:
       headService:
         metadata:
@@ -25,10 +49,11 @@ spec:
       rayStartParams:
         dashboard-host: '0.0.0.0'
       template:
+        schedulerName: my-scheduler
         spec:
           containers:
           - name: head
-            image: public.ecr.aws/data-on-eks/ray-serve-inf2-llama2:latest # Image created using the Dockerfile attached in the folder
+            image: public.ecr.aws/data-on-eks/ray2.22.0-py310-llama2-13b-neuron:latest # Image created using the Dockerfile attached in the folder
             imagePullPolicy: Always # Ensure the image is always pulled when updated
             lifecycle:
               preStop:
@@ -53,6 +78,9 @@ spec:
               requests:
                 cpu: 4
                 memory: 20Gi
+            env:
+            - name: LD_LIBRARY_PATH
+              value: "/home/ray/anaconda3/lib:$LD_LIBRARY_PATH"
           nodeSelector: # This is using Karpenter Nodes with the provisioner label
             instanceType: mixed-x86
             provisionerType: Karpenter
@@ -68,9 +96,10 @@ spec:
       rayStartParams: {}
       template:
         spec:
+          schedulerName: my-scheduler
           containers:
           - name: worker
-            image: public.ecr.aws/data-on-eks/ray-serve-inf2-llama2:latest
+            image: public.ecr.aws/data-on-eks/ray2.22.0-py310-llama2-13b-neuron:latest
             imagePullPolicy: Always # Ensure the image is always pulled when updated
             lifecycle:
               preStop:
@@ -85,6 +114,9 @@ spec:
                 cpu: "180"
                 memory: "700G"
                 aws.amazon.com/neuron: "12"
+            env:
+            - name: LD_LIBRARY_PATH
+              value: "/home/ray/anaconda3/lib:$LD_LIBRARY_PATH"
           nodeSelector:
             instanceType: inferentia-inf2
             provisionerType: Karpenter

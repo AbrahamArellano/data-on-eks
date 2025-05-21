@@ -13,7 +13,7 @@ variable "region" {
 
 variable "eks_cluster_version" {
   description = "EKS Cluster version"
-  default     = "1.29"
+  default     = "1.30"
   type        = string
 }
 
@@ -49,4 +49,12 @@ variable "enable_kubecost" {
   description = "Enable Kubecost addon"
   type        = bool
   default     = false
+}
+
+
+variable "bottlerocket_data_disk_snpashot_id" {
+  description = "Bottlerocket Data Disk Snapshot ID"
+  type        = string
+  default     = ""
+
 }

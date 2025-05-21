@@ -1,8 +1,20 @@
 ---
-sidebar_position: 5
+sidebar_position: 1
 sidebar_label: Trainium on EKS
 ---
 import CollapsibleContent from '../../../src/components/CollapsibleContent';
+
+:::caution
+
+The **AI on EKS** content **is being migrated** to a new repository.
+🔗 👉 [Read the full migration announcement »](https://awslabs.github.io/data-on-eks/docs/migration/migration-announcement)
+
+:::
+
+:::warning
+Deployment of ML models on EKS requires access to GPUs or Neuron instances. If your deployment isn't working, it’s often due to missing access to these resources. Also, some deployment patterns rely on Karpenter autoscaling and static node groups; if nodes aren't initializing, check the logs for Karpenter or Node groups to resolve the issue.
+:::
+
 
 # AWS Trainium on EKS
 [AWS Trainium](https://aws.amazon.com/machine-learning/trainium/) is an advanced ML accelerator that transforms high-performance deep learning(DL) training. `Trn1` instances, powered by AWS Trainium chips, are purpose-built for high-performance DL training of **100B+ parameter** models. Meticulously designed for exceptional performance, Trn1 instances cater specifically to training popular Natual Language Processing(NLP) models on AWS, offering up to  **50% cost savings ** compared to GPU-based EC2 instances. This cost efficiency makes them an attractive option for data scientists and ML practitioners seeking optimized training costs without compromising performance.
@@ -113,6 +125,11 @@ kubectl get nodes # Output shows the EKS Managed Node group nodes
 
 </CollapsibleContent>
 
+### Observability with AWS CloudWatch and Neuron Monitor
+
+This blueprint deploys the CloudWatch Observability Agent as a managed add-on, providing comprehensive monitoring for containerized workloads. It includes container insights for tracking key performance metrics such as CPU and memory utilization. Additionally, the blueprint integrates GPU metrics using NVIDIA's DCGM plugin, which is essential for monitoring high-performance GPU workloads. For machine learning models running on AWS Inferentia or Trainium, the [Neuron Monitor plugin](https://awsdocs-neuron.readthedocs-hosted.com/en/latest/tools/neuron-sys-tools/neuron-monitor-user-guide.html#neuron-monitor-user-guide) is added to capture and report Neuron-specific metrics.
+
+All metrics, including container insights, GPU performance, and Neuron metrics, are sent to Amazon CloudWatch, where you can monitor and analyze them in real-time. After the deployment is complete, you should be able to access these metrics directly from the CloudWatch console, allowing you to manage and optimize your workloads effectively.
 
 ### Distributed PyTorch Training on Trainium with TorchX and EKS
 
@@ -145,7 +162,7 @@ Enter the ECR region: us-west-2
 ECR repository 'eks_torchx_test' already exists.
 Repository URL: <YOUR_ACCOUNT_ID>.dkr.ecr.us-west-2.amazonaws.com/eks_torchx_test
 Building and Tagging Docker image... <YOUR_ACCOUNT_ID>.dkr.ecr.us-west-2.amazonaws.com/eks_torchx_test:bert_pretrain
-[+] Building 2.4s (26/26) FINISHED  
+[+] Building 2.4s (26/26) FINISHED
  => [internal] load build definition from Dockerfile.bert_pretrain                                                                                                                   0.0s
  => => transferring dockerfile: 5.15kB                                                                                                                                               0.0s
  => [internal] load .dockerignore                                                                                                                                                    0.0s
